@@ -20,7 +20,7 @@ $htmlBody = <<<END
     Search Term: <input type="search" id="q" name="q" placeholder="Enter Search Term">
   </div>
   <div>
-    Max Results: <input type="number" id="maxResults" name="maxResults" min="1" max="50" step="1" value="25">
+    Max Results: <input type="number" id="maxResults" name="maxResults" min="1" max="50" step="1" value="10">
   </div>
   <input type="submit" value="Search">
 </form>
@@ -62,8 +62,8 @@ if (isset($_GET['q']) && isset($_GET['maxResults'])) {
     foreach ($searchResponse['items'] as $searchResult) {
       switch ($searchResult['id']['kind']) {
         case 'youtube#video':
-          $videos .= sprintf('<li>%s (%s) - %s</li>',
-              $searchResult['snippet']['title'], $searchResult['id']['videoId'], date_format(date_create($searchResult['snippet']['publishedAt']), "m/d/Y"));
+          $videos .= sprintf('<li><a href="javascript:;" class="youTubeLink" id="%s">%s</a> (%s) - %s</li>',
+              $searchResult['id']['videoId'], $searchResult['snippet']['title'], $searchResult['id']['videoId'], date_format(date_create($searchResult['snippet']['publishedAt']), "m/d/Y"));
           break;
         case 'youtube#channel':
           $channels .= sprintf('<li>%s (%s)</li>',
@@ -103,6 +103,18 @@ END;
     <?=$htmlBody?>
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
     <div id="player"></div>
+    <div>
+    	<p>Select playback quality:</p>
+    	<ul>
+    		<li><a href="javascript:;" class="setQualityLink" id="hd1080">1080p</a></li>
+    		<li><a href="javascript:;" class="setQualityLink" id="hd720">720p</a></li>
+    		<li><a href="javascript:;" class="setQualityLink" id="large">large</a></li>
+    		<li><a href="javascript:;" class="setQualityLink" id="medium">medium</a></li>
+    		<li><a href="javascript:;" class="setQualityLink" id="small">small</a></li>
+    	</ul>
+	</div>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
 
     <script>
       // 2. This code loads the IFrame Player API code asynchronously.
@@ -119,7 +131,7 @@ END;
         player = new YT.Player('player', {
           height: '390',
           width: '640',
-          videoId: 'to-dnlRsUUU',
+//           videoId: 'to-dnlRsUUU',
           events: {
             'onReady': onPlayerReady,
 //             'onStateChange': onPlayerStateChange
@@ -130,9 +142,19 @@ END;
       // 4. The API will call this function when the video player is ready.
       function onPlayerReady(event) {
 //         event.target.playVideo();
-		event.target.setPlaybackQuality('hd720');
+// 		event.target.setPlaybackQuality('small');
+// 		alert('alert');
 
       }
+      
+      $( ".youTubeLink" ).click(function(event) {
+		  player.loadVideoById(event.target.id);
+		  player.setPlaybackQuality('hd720');
+		});
+      
+      $( ".setQualityLink" ).click(function(event) {
+		  player.setPlaybackQuality(event.target.id);
+		});
 
       // 5. The API calls this function when the player's state changes.
       //    The function indicates that when playing a video (state=1),
